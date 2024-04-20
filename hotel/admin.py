@@ -3,6 +3,11 @@ from .models import *
 
 # Register your models here.
 
+@admin.register(UserProfile)
+
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('name','number','email','address')
+ 
 @admin.register(Roomtype)
 class RoomtypeAdmin(admin.ModelAdmin):
     list_display = ('category','amenities','price')
@@ -10,21 +15,16 @@ class RoomtypeAdmin(admin.ModelAdmin):
 
 @admin.register(Room)
 class RoomAdmin(admin.ModelAdmin):
-    list_display = ('number','availability')
+    list_display = ('quantity','roomtype','availability')
     
 
-@admin.register(Booking)
-class BookingAdmin(admin.ModelAdmin):
-    list_display = ('user','check_in','check_out')
-    
-    
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
-    list_display = ('booking','is_cancelled')
+    list_display = ('user','room','check_in','check_out','room_cost')
     
 @admin.register(Staff)
 class StaffAdmin (admin.ModelAdmin):
-    list_display = ('user','role')
+    list_display = ('name','role')
     
 @admin.register(Task)
 class TaskAdmin (admin.ModelAdmin):
@@ -37,7 +37,7 @@ class ShiftAdmin (admin.ModelAdmin):
 
 @admin.register(Supplier)
 class SupplierAdmin (admin.ModelAdmin):
-    list_display = ('name','contact_person','email','phone_number')
+    list_display = ('contact_person','email','phone_number')
     
 
 @admin.register(InventoryItem)
@@ -53,6 +53,32 @@ class PurchaseOrderAdmin (admin.ModelAdmin):
 class FeedbackAdmin (admin.ModelAdmin):
     list_display = ('user','rating','comments','date_submitted')
     
+
+class PaymentInline(admin.TabularInline):
+    model = Payment
+
+class InvoiceItemInline(admin.TabularInline):
+    model = InvoiceItem
+    
+    
 @admin.register(Invoice)
-class InvoiceAdmin (admin.ModelAdmin):
-    list_display = ('reservation','total_amount','tax_amount')
+class InvoiceAdmin(admin.ModelAdmin):
+    inlines = [InvoiceItemInline, PaymentInline]
+    list_display = ['id', 'user', 'date_created', 'due_date', 'total_paid_amount', 'balance_due', 'is_fully_paid']
+    list_filter = ['is_paid']
+    search_fields = ['user__name']
+    
+@admin.register(InvoiceItem)
+class InvoiceItemAdmin(admin.ModelAdmin):
+    list_display = ['invoice', 'description', 'quantity', 'unit_price', 'total_amount']
+    list_filter = ['invoice']
+    
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ['invoice', 'date_paid', 'amount', 'payment_method']
+    list_filter = ['invoice__user']
+
+    
+
+    
+    
